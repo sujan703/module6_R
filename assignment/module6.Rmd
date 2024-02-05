@@ -81,13 +81,14 @@ There are a total of 27 questions embedded throughout this module, many of which
 
 **Answer Q.1**
 
-
+In the context of ecological forecasting, "uncertainty" refers to the range of possible alternate future conditions that are predicted by a model.
 
 **Q.2 (Shiny)** How do you think knowing the uncertainty in a forecast helps natural resource managers? For example, if a drinking water manager received a toxic algal bloom forecast with high vs. low uncertainty in a bloom prediction, how might that affect their decision-making?
 
 **Answer Q.2**
 
 
+Knowing the uncertainty in a toxic algal bloom forecast helps natural resource managers by providing a clear understanding of the range of possible outcomes. If the forecast has high uncertainty, drinking water managers may choose to implement precautionary measures, such as increasing water quality monitoring or adjusting treatment protocols, to mitigate potential risks. In contrast, lower uncertainty may instill greater confidence, allowing managers to allocate resources more efficiently and make more targeted decisions to address the specific forecasted conditions.
 
 ## Set-up
 
@@ -119,11 +120,11 @@ Lake Barco is one of the lake sites in the U.S. National Ecological Observatory 
 
 **Answer Q.3**
 
-Four-letter site identifier:  
-Latitude:  
-Longitude:  
-Lake area (km2):  
-Elevation (m):  
+Four-letter site identifier: BARC  
+Latitude:29.67598  
+Longitude: -82.008414 
+Lake area (km2): 0.13 
+Elevation (m):  27
 
 
 ### Water Temperature
@@ -140,7 +141,9 @@ Being able to predict how water temperature may change in the short-term (up to 
 
 **Answer Q.4**
 
+**Dissolved Oxygen Depletion:** Increasing water temperatures can lead to a decrease in the solubility of oxygen in water, potentially resulting in lower dissolved oxygen levels. This can negatively impact aquatic organisms, especially those that require well-oxygenated environments, and may lead to fish kills and disruptions in the overall balance of the ecosystem.
 
+**Algal Blooms:** Higher water temperatures can promote the growth of algae, leading to an increased likelihood of algal blooms. Some algae produce toxins harmful to aquatic life and can result in the degradation of water quality. Algal blooms may also lead to oxygen depletion when the algae decompose, further impacting the health of the lake or inland water body.
 
 
 Read in and view lake data.
@@ -158,7 +161,7 @@ plot_lake_data(lake_df)
 **Q.5 (Shiny)** Do you think there is a strong relationship between air temperature and water temperature at this lake? 
 
 **Answer Q.5**
-
+There is a clear relationship between air and water temperature at Lake Barco. Over time, when the air temperature increases, the water temperature also increases, and when the air temperature decreases, the water temperature follows suit. The patterns in both temperatures align, indicating a consistent correlation.
 
 ## Objective 2. Read in and visualize an air temperature forecast for Lake Barco 
 
@@ -210,7 +213,9 @@ plot_airtemp_forecast(lake_obs, weather_forecast, forecast_start_date)
 **Q.6 (Rmd)** Why are there multiple gray lines on the plot above? What do they represent? Be as specific as you can.  
 
 **Answer Q.6**
+The presence of multiple gray lines on the plot represents the ensemble members in the NOAA Global Ensemble Forecast System (GEFS). Ensemble forecasts involve running a model multiple times with slightly different initial conditions to account for uncertainties in our understanding of the atmosphere. 
 
+The variations among the gray lines depict the model's sensitivity to different initial conditions and the inherent uncertainty in predicting future atmospheric conditions. The spread or dispersion of the lines provides insights into the range of potential air temperature values for each forecasted day, allowing forecasters and users to assess the uncertainty associated with the predictions.
 
 ## Objective 3. Build a linear regression forecast model 
 
@@ -318,17 +323,38 @@ mod_predictions_watertemp(lake_df2, pred)
 **Q.7 (Rmd)** Describe the structure of the multiple linear regression model in your own words. How is water temperature being predicted?  
 
 **Answer Q.7**
+The multiple linear regression model is structured to predict water temperature based on two independent variables: yesterday's water temperature and today's air temperature.
 
+The specific formula for the model is obtained by fitting the linear regression to the observed data. The coefficients of the model, denoted as m and b, are estimated from the data, and the fitted model can be expressed as:
+
+$$Water Temperature=\beta_{0}×Yesterday’s Water Temperature+\beta_{1}×Today’s Air Temperature+Intercept$$
+
+The model uses information from both yesterday's water temperature and today's air temperature to make predictions about today's water temperature. The coefficients derived from the model quantify the influence of each predictor, and the intercept represents the baseline water temperature
 
 **Q.8 (Rmd)** Examine the values of the fitted model parameters (`coeffs`). What does this tell you about the relative importance of past water temperature and current air temperature in driving current water temperature? Examine the standard errors of the parameters (`params_se`). What do the standard errors tell you about how confident we are in the fitted model parameter values?
 
 **Answer Q.8**
 
+**Coefficients of the parameters **
+
+Past Water Temperature (0.95): A one-unit increase in yesterday's water temperature is associated with an approximately 0.95-unit increase in today's water temperature. This higher coefficient indicates a stronger influence of past water temperature on current water temperature compared to air temperature.
+
+Current Air Temperature (0.18): A one-unit increase in today's air temperature is associated with an approximately 0.18-unit increase in today's water temperature, holding past water temperature constant. The lower coefficient suggests that, in this model, current air temperature has a comparatively weaker influence on current water temperature than past water temperature.
+
+**Standard errors of the parameters**
+The small standard errors for both past water temperature (0.0198) and current air temperature (0.0185) suggest high confidence in the estimated coefficients. Smaller standard errors indicate greater precision in the model. In summary, we are relatively confident in the fitted model parameter values, and the model has low uncertainty in quantifying the relationships between past water temperature, current air temperature, and current water temperature.
 
 **Q.9 (Rmd)** Assess the model fit. Examine the values of `r2`, `err`, and `rmse`, as well as the plot showing the model fit and observations. What does this tell you about model performance?  
 
 **Answer Q.9** 
 
+The $R^2$ of 0.90 indicates a strong fit, explaining a substantial portion of the variability in water temperature.
+
+The value is very close to zero (1.34e-15), suggesting that, on average, the model predictions are nearly equal to the observed values. A mean bias close to zero indicates that the model is unbiased in its predictions.
+
+RMSE of 0.61 indicates that, on average, the model's predictions are relatively close to the observed values.
+
+The plot shows good alignment and pattern consistency between the model predictions and observed values. It suggests that the linear regression model accurately captures the relationship between past water temperature, current air temperature, and current water temperature in our dataset.
 
 ## Objective 4. Generate a deterministic forecast (without uncertainty)
 
@@ -394,12 +420,12 @@ for(i in 2:8){
 ```{r}
 starting_temperature <- 15.2 #degrees C
 
-water_temperature <- rep(NA, 8)
+water_temperature <- rep(NA, 10)
 
 water_temperature[1] <- starting_temperature
 water_temperature
 
-for(i in 2:8){
+for(i in 2:10){
   water_temperature[i] = water_temperature[i-1] + 0.1 #degrees C
   print(water_temperature[i])
 }
@@ -480,9 +506,9 @@ plot_forecast(lake_obs,
 
 **Q.11 (Rmd)** Compare the water temperature forecast plot above to the plot of the NOAA GEFS air temperature forecast. Does the forecasted water temperature track the forecasted air temperature, and why might this be?  
 
-
 **Answer Q.11** 
 
+No, it doesn't track closely. The reason is that for the water temperature forecast, only one ensemble member is used, while NOAA's air temperature forecast utilizes 30 ensemble members. Using more ensemble members helps capture a broader range of uncertainties, providing a more comprehensive understanding of potential variations. Therefore, the differences in the number of ensemble members contribute to the divergence between the water temperature and air temperature forecasts.
 
 ### What is wrong with deterministic forecasts?
 
@@ -554,11 +580,14 @@ plot_forecast(lake_obs,
 **Answer Q.12**
 
 
+The plot shows that the forecasted water temperature rises until approximately September 27-29 and then declines. The initial increase is likely due to the influence of rising air temperatures, as warmer air tends to elevate water temperatures. The subsequent decline could be linked to various factors, including shifts in environmental conditions, seasonal changes, or intricate ecological interactions. This fluctuation in the forecasted water temperature highlights the uncertainties introduced by the ensemble forecast, which takes into account diverse air temperature scenarios.
 
 **Q.13 (Rmd)** Compare the plot above of the probabilistic forecast with driver uncertainty to the plot of the deterministic forecast. How do the differences in these two forecasts affect your understanding of what water temperatures are likely to be during the week of the forecast?  
 
 **Answer Q.13** 
+Comparing the two forecasts, the deterministic one gives a single, best-guess prediction for water temperature without considering uncertainties. It's like having one answer without thinking about other possibilities. On the other hand, the probabilistic forecast with driver uncertainty considers many different scenarios, showing a range of potential water temperatures. This forecast says, "Hey, we're not sure exactly what will happen, but here are several possible outcomes based on different air temperature possibilities."
 
+The deterministic forecast gives a singular perspective, while the probabilistic forecast acknowledges and quantifies uncertainties. Differences between the two forecasts emphasize the variability in water temperature projections. Understanding the probabilistic forecast helps recognize the potential range of conditions, providing a more comprehensive and realistic view of the uncertainty associated with ecological predictions. This nuanced understanding allows for better-informed decision-making, particularly when dealing with the inherent complexity and variability of ecological systems.
 
 
 ## Objective 6. Generate a forecast with parameter uncertainty
@@ -682,7 +711,7 @@ plot_forecast(lake_obs,
 
 **Answer Q.14**
 
-
+Reducing parameter uncertainty in ecological forecasting models involves improving the estimation of model parameters. One fundamental method involves ncrease Data Quality and Quantity. Collecting more high-quality data, especially under diverse conditions, can provide a more comprehensive and representative sample for model calibration. A larger dataset allows for more accurate estimation of model parameters. Additionally, periodically updating the model parameters as new data become available. This iterative process helps refine parameter estimates over time, reducing uncertainty as the model is continuously improved.
 
 ## Objective 7. Generate a forecast with process uncertainty
 
@@ -845,6 +874,7 @@ plot_forecast(lake_obs,
 
 **Answer Q.15**
 
+Factors that contribute to an increase in initial conditions uncertainty are often related to measurement limitations, environmental variability, observational challenges, and the inherent complexity of the ecological system being modeled.
 
 
 # Activity C:
@@ -930,12 +960,12 @@ plot_partitioned_uc(sd_df)
 **Answer Q.16**
 
 
-
+Parameter uncertainty has the highest standard deviation value that indicates the predominant contributor to overall uncertainty in the water temperature forecast.
 
 **Q.17 (Rmd)** Do you think that different water temperature forecast models would have the same or different quantities of uncertainty? Why?
 
 **Answer Q.17**
-
+The amount of uncertainty in water temperature forecast models can differ for various reasons. If a model is more complex, trying to account for a wide range of factors affecting water temperature, it might introduce more uncertainty. On the flip side, simpler models could miss out on certain factors, leading to a different kind of uncertainty. 
 
 
 ## Objective 11. Build and fit your own model
@@ -996,7 +1026,7 @@ model_data <- lake_df %>%
 **Answer Q.18** Edit the code block to provide your answer
 
 ```{r}
-fit <- lm(model_data$wtemp ~ model_data$wtemp_yday + model_data$airt) #INSERT ADDITIONAL COVARIATES IN THE PARENTHESES
+fit <- lm(model_data$wtemp ~ model_data$wtemp_yday + model_data$airt + model_data$wnd) #INSERT ADDITIONAL COVARIATES IN THE PARENTHESES
 fit_summary <- summary(fit)
 ```
 
